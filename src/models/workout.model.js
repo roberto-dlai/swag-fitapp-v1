@@ -95,6 +95,10 @@ async function addExercisesToWorkout(workoutId, exercises) {
   }
 }
 
+async function clearExercises(workoutId) {
+  await pool.query('DELETE FROM workout_exercises WHERE workout_id = $1', [workoutId]);
+}
+
 async function getStreak(userId) {
   const { rows } = await pool.query(
     `WITH dates AS (
@@ -124,5 +128,6 @@ module.exports = {
   remove,
   findExercisesForWorkout,
   addExercisesToWorkout,
+  clearExercises,
   getStreak,
 };

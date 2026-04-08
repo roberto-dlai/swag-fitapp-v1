@@ -82,9 +82,9 @@ function generateDailyWorkout({ userPrefs, weather, exercises }) {
   const goalExercises = available.filter(ex => preferredCategories.includes(ex.category));
   const otherExercises = available.filter(ex => !preferredCategories.includes(ex.category));
 
-  // Pick 4-6 exercises depending on fitness level
-  const exerciseCount = userPrefs.fitness_level === 'beginner' ? 4 :
-                        userPrefs.fitness_level === 'intermediate' ? 5 : 6;
+  // Pick 3-5 exercises depending on fitness level
+  const exerciseCount = userPrefs.fitness_level === 'beginner' ? 3 :
+                        userPrefs.fitness_level === 'intermediate' ? 4 : 5;
 
   // Shuffle and select
   const shuffled = [...goalExercises].sort(() => Math.random() - 0.5);
@@ -153,24 +153,31 @@ function generateDailyWorkout({ userPrefs, weather, exercises }) {
  * Generate a 7-day workout plan.
  */
 function generateWeeklyPlan({ userPrefs, forecasts, exercises }) {
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const today = new Date();
-  const todayDayIndex = (today.getDay() + 6) % 7; // Monday = 0
+
+  // Build a forecast lookup by date
+  const forecastByDate = {};
+  for (const f of forecasts) {
+    forecastByDate[f.date] = f;
+  }
 
   const plan = [];
   let workoutDaysCount = 0;
   let consecutiveWorkouts = 0;
 
   for (let i = 0; i < 7; i++) {
-    const dayIndex = (todayDayIndex + i) % 7;
-    const dayName = days[dayIndex];
-    const forecast = forecasts[i] || { temperature: 70, condition: 'clear' };
+    const date = new Date(today);
+    date.setDate(date.getDate() + i);
+    const dateStr = date.toISOString().split('T')[0];
+    const dayName = dayNames[date.getDay()];
+    const forecast = forecastByDate[dateStr] || { temperature: 70, condition: 'clear' };
 
     // Schedule rest days: after 3 consecutive workouts, or if weekly_frequency reached
     if (consecutiveWorkouts >= 3 || workoutDaysCount >= userPrefs.weekly_frequency) {
       plan.push({
         day: dayName,
-        date: forecast.date,
+        date: dateStr,
         type: 'rest',
         exercises: [],
         tips: ['Rest day — recovery is essential for progress!'],
@@ -190,7 +197,7 @@ function generateWeeklyPlan({ userPrefs, forecasts, exercises }) {
 
     const dailyPlan = generateDailyWorkout({ userPrefs, weather, exercises });
     dailyPlan.day = dayName;
-    dailyPlan.date = forecast.date;
+    dailyPlan.date = dateStr;
     dailyPlan.type = 'workout';
     plan.push(dailyPlan);
 

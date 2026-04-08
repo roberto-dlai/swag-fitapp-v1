@@ -13,10 +13,10 @@ async function userPreferences(req, res, next) {
 
     req.userPrefs = {
       unit_pref: user.unit_pref,
-      fitness_goal: user.fitness_goal,
-      fitness_level: user.fitness_level,
+      fitness_goal: 'general',
+      fitness_level: 'beginner',
       equipment: user.equipment,
-      weekly_frequency: user.weekly_frequency,
+      weekly_frequency: 5,
       account_tier: user.account_tier,
       location: user.location,
       name: user.name,

@@ -63,15 +63,25 @@ async function getTodayWorkout(req, res, next) {
 
 async function getWeeklyPlan(req, res, next) {
   try {
-    const forecast = await getForecast({
-      location: req.userPrefs.location,
-      unit: req.userPrefs.unit_pref,
-    });
+    const [currentWeather, forecast] = await Promise.all([
+      getCurrentWeather({ location: req.userPrefs.location, unit: req.userPrefs.unit_pref }),
+      getForecast({ location: req.userPrefs.location, unit: req.userPrefs.unit_pref }),
+    ]);
     const allExercises = await exerciseModel.findAll();
+
+    // Use current weather for today, forecast for the rest
+    const todayStr = new Date().toISOString().split('T')[0];
+    const todayForecast = {
+      date: todayStr,
+      temperature: currentWeather.temperature,
+      condition: currentWeather.condition,
+    };
+    const futureDays = forecast.forecasts.filter(f => f.date !== todayStr);
+    const combinedForecasts = [todayForecast, ...futureDays];
 
     const plan = generateWeeklyPlan({
       userPrefs: req.userPrefs,
-      forecasts: forecast.forecasts,
+      forecasts: combinedForecasts,
       exercises: allExercises,
     });
 
@@ -108,7 +118,8 @@ async function customizeToday(req, res, next) {
     });
 
     if (workout) {
-      // Update existing
+      // Clear old exercises and update
+      await workoutModel.clearExercises(workout.id);
       workout = await workoutModel.update(workout.id, {
         type: 'custom',
         duration_min: plan.duration_min,

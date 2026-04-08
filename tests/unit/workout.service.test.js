@@ -130,13 +130,13 @@ describe('generateDailyWorkout', () => {
     }
   });
 
-  it('generates 4 exercises for beginners', () => {
+  it('generates 3 exercises for beginners', () => {
     const plan = generateDailyWorkout({
       userPrefs: { ...basePrefs, fitness_level: 'beginner' },
       weather: { temperature: 70, unit: 'fahrenheit', condition: 'clear' },
       exercises: sampleExercises,
     });
-    assert.ok(plan.exercises.length <= 4);
+    assert.ok(plan.exercises.length <= 3);
   });
 
   it('handles celsius weather input correctly', () => {

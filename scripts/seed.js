@@ -103,6 +103,17 @@ function buildSampleReviews(aliceId, bobId) {
 async function seed() {
   console.log('Seeding database...');
 
+  // Clear existing data
+  await pool.query('DELETE FROM workout_exercises');
+  await pool.query('DELETE FROM workouts');
+  await pool.query('DELETE FROM exercises');
+  await pool.query('DELETE FROM users');
+
+  await mongoClient.connect();
+  const db = mongoClient.db();
+  await db.collection('reviews').deleteMany({});
+  console.log('Cleared existing data (PostgreSQL + MongoDB)');
+
   // Seed exercises
   for (const ex of exercises) {
     await pool.query(
@@ -151,8 +162,6 @@ async function seed() {
   console.log(`Seeded ${workoutData.length} workouts`);
 
   // Seed MongoDB reviews
-  await mongoClient.connect();
-  const db = mongoClient.db();
   const reviewsCollection = db.collection('reviews');
 
   await reviewsCollection.createIndex({ userId: 1 });

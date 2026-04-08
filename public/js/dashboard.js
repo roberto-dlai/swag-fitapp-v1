@@ -103,30 +103,29 @@ const Dashboard = {
     const actions = document.createElement('div');
     actions.className = 'workout-actions';
 
-    const startBtn = document.createElement('button');
-    startBtn.className = 'btn btn-success btn-sm';
-    startBtn.textContent = workout.status === 'in_progress' ? 'Complete Workout' : 'Start Workout';
-    startBtn.setAttribute('aria-label', 'Start or complete workout');
-    startBtn.addEventListener('click', () => this.toggleWorkoutStatus(workout));
+    if (workout.status === 'completed') {
+      const completedBadge = document.createElement('span');
+      completedBadge.className = 'badge badge-completed';
+      completedBadge.textContent = 'Completed';
+      actions.appendChild(completedBadge);
+    } else {
+      const completeBtn = document.createElement('button');
+      completeBtn.className = 'btn btn-success btn-sm';
+      completeBtn.textContent = 'Workout Complete';
+      completeBtn.setAttribute('aria-label', 'Mark workout as complete');
+      completeBtn.addEventListener('click', () => this.markCompleted(workout));
+      actions.appendChild(completeBtn);
+    }
 
-    actions.appendChild(startBtn);
     container.appendChild(actions);
   },
 
-  async toggleWorkoutStatus(workout) {
+  async markCompleted(workout) {
     try {
-      let newStatus;
-      if (workout.status === 'planned') {
-        newStatus = 'in_progress';
-      } else if (workout.status === 'in_progress') {
-        newStatus = 'completed';
-      } else {
-        return;
-      }
-
-      await API.patch(`/api/workouts/${workout.id}`, { status: newStatus });
-      Notifications.success(newStatus === 'in_progress' ? 'Workout started!' : 'Workout completed!');
+      await API.patch(`/api/workouts/${workout.id}`, { status: 'completed' });
+      Notifications.success('Workout completed!');
       this.loadTodayWorkout();
+      WorkoutCards.load();
     } catch (err) {
       Notifications.error(err.message);
     }
@@ -135,52 +134,46 @@ const Dashboard = {
   populatePreferences() {
     if (!this.user) return;
     document.getElementById('pref-unit').value = this.user.unit_pref;
-    document.getElementById('pref-goal').value = this.user.fitness_goal;
-    document.getElementById('pref-level').value = this.user.fitness_level;
-    document.getElementById('pref-frequency').value = this.user.weekly_frequency;
     document.getElementById('pref-location').value = this.user.location || '';
   },
 
   setupPreferencesForm() {
-    document.getElementById('profile-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
+    const savePrefs = async () => {
       try {
         const updates = {
           unit_pref: document.getElementById('pref-unit').value,
-          fitness_goal: document.getElementById('pref-goal').value,
-          fitness_level: document.getElementById('pref-level').value,
-          weekly_frequency: parseInt(document.getElementById('pref-frequency').value, 10),
           location: document.getElementById('pref-location').value,
         };
 
         const data = await API.patch('/api/users/me', updates);
         this.user = data.user;
-        Notifications.success('Preferences saved!');
+        WeatherWidget.load();
+        WorkoutCards.load();
       } catch (err) {
         Notifications.error(err.message);
       }
+    };
+
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await savePrefs();
     });
+
+    // Auto-save when unit changes
+    document.getElementById('pref-unit').addEventListener('change', savePrefs);
   },
 
   setupCustomize() {
-    const modal = document.getElementById('customize-modal');
-    const form = document.getElementById('customize-form');
+    const select = document.getElementById('workout-type-select');
 
-    document.getElementById('customize-btn').addEventListener('click', () => {
-      modal.classList.remove('hidden');
-    });
+    // Set initial value from user's fitness goal
+    if (this.user) {
+      select.value = this.user.fitness_goal;
+    }
 
-    document.getElementById('customize-cancel').addEventListener('click', () => {
-      modal.classList.add('hidden');
-    });
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const workoutType = document.getElementById('custom-type').value;
+    select.addEventListener('change', async () => {
       try {
-        await API.patch('/api/workouts/today', { workout_type: workoutType });
-        modal.classList.add('hidden');
-        Notifications.success('Workout customized!');
+        await API.patch('/api/workouts/today', { workout_type: select.value });
         this.loadTodayWorkout();
       } catch (err) {
         Notifications.error(err.message);
