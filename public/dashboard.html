@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitCheck — Dashboard</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Header -->
+    <header class="dashboard-header">
+      <h1>FitCheck</h1>
+      <div class="header-right">
+        <span id="streak-badge" class="streak-badge hidden" aria-label="Workout streak"></span>
+        <span id="user-name" class="user-name"></span>
+        <button id="logout-btn" class="btn btn-outline btn-sm">Log Out</button>
+      </div>
+    </header>
+
+    <!-- Dashboard Grid -->
+    <div class="dashboard-grid">
+
+      <!-- Weather Widget -->
+      <section class="card" aria-label="Current weather">
+        <div class="card-header">
+          <h2>Weather</h2>
+        </div>
+        <div id="weather-widget">
+          <div class="loading-state"><span class="loading-spinner"></span> Loading...</div>
+        </div>
+      </section>
+
+      <!-- Today's Workout -->
+      <section class="card today-workout" aria-label="Today's workout">
+        <div class="card-header">
+          <h2>Today's Workout</h2>
+          <div>
+            <button id="customize-btn" class="btn btn-outline btn-sm" aria-label="Customize today's workout">Customize</button>
+          </div>
+        </div>
+        <div id="today-workout">
+          <div class="loading-state"><span class="loading-spinner"></span> Loading...</div>
+        </div>
+      </section>
+
+      <!-- 7-Day Plan -->
+      <section class="card full-width" aria-label="7-day workout plan">
+        <div class="card-header">
+          <h2>7-Day Plan</h2>
+        </div>
+        <div id="weekly-plan">
+          <div class="loading-state"><span class="loading-spinner"></span> Loading...</div>
+        </div>
+      </section>
+
+      <!-- Profile / Preferences -->
+      <section class="card" aria-label="Profile and preferences">
+        <div class="card-header">
+          <h2>Preferences</h2>
+        </div>
+        <form id="profile-form" class="profile-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="pref-unit">Units</label>
+              <select id="pref-unit" name="unit_pref">
+                <option value="imperial">Imperial (°F, lbs)</option>
+                <option value="metric">Metric (°C, kg)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="pref-goal">Fitness Goal</label>
+              <select id="pref-goal" name="fitness_goal">
+                <option value="general">General Fitness</option>
+                <option value="weight_loss">Weight Loss</option>
+                <option value="strength">Strength</option>
+                <option value="endurance">Endurance</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="pref-level">Fitness Level</label>
+              <select id="pref-level" name="fitness_level">
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="pref-frequency">Days per Week</label>
+              <select id="pref-frequency" name="weekly_frequency">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="pref-location">Location</label>
+            <input type="text" id="pref-location" name="location" placeholder="City name">
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">Save Preferences</button>
+        </form>
+      </section>
+
+      <!-- Community Reviews -->
+      <section class="card" aria-label="Community reviews">
+        <div class="card-header">
+          <h2>Community Reviews</h2>
+        </div>
+        <div id="reviews-section">
+          <div class="loading-state"><span class="loading-spinner"></span> Loading...</div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Customize Modal -->
+  <div id="customize-modal" class="hidden" role="dialog" aria-label="Customize workout">
+    <div class="auth-page">
+      <div class="auth-container">
+        <h2>Customize Today's Workout</h2>
+        <form id="customize-form">
+          <div class="form-group">
+            <label for="custom-type">Workout Focus</label>
+            <select id="custom-type">
+              <option value="general">General Fitness</option>
+              <option value="weight_loss">Weight Loss / Cardio</option>
+              <option value="strength">Strength</option>
+              <option value="endurance">Endurance</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:0.75rem">
+            <button type="submit" class="btn btn-primary">Apply</button>
+            <button type="button" id="customize-cancel" class="btn btn-outline">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/notifications.js"></script>
+  <script src="/js/weatherWidget.js"></script>
+  <script src="/js/workoutCards.js"></script>
+  <script src="/js/reviewSection.js"></script>
+  <script src="/js/dashboard.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

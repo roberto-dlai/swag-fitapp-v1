@@ -1,0 +1,8 @@
+node_modules/
+.env
+*.log
+.git/
+.DS_Store
+coverage/
+course-syllabus.md
+fitcheck-build-plan.md

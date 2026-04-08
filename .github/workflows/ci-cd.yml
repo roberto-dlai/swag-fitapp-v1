@@ -1,0 +1,82 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: fitcheck_test
+          POSTGRES_USER: fitcheck
+          POSTGRES_PASSWORD: fitcheck
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fitcheck"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand({ping:1})'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run migrations
+        run: node scripts/migrate.js
+        env:
+          DATABASE_URL: postgresql://fitcheck:fitcheck@localhost:5432/fitcheck_test
+
+      - name: Run unit tests
+        run: node --test tests/unit/unitConversion.test.js tests/unit/calorie.service.test.js tests/unit/workout.service.test.js tests/unit/weather.service.test.js
+        env:
+          JWT_SECRET: test-secret-that-is-at-least-32-characters-long
+          WEATHER_API_KEY: test-key
+
+      - name: Run integration tests
+        run: node --test tests/integration/auth.test.js tests/integration/workout.routes.test.js tests/integration/middleware.test.js
+        env:
+          DATABASE_URL: postgresql://fitcheck:fitcheck@localhost:5432/fitcheck_test
+          TEST_DATABASE_URL: postgresql://fitcheck:fitcheck@localhost:5432/fitcheck_test
+          MONGODB_URI: mongodb://localhost:27017/fitcheck_test
+          JWT_SECRET: test-secret-that-is-at-least-32-characters-long
+          WEATHER_API_KEY: test-key
+          CORS_ORIGIN: http://localhost:3000
+
+  build-and-deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t fitcheck .
+
+      # Deploy steps would go here (push to registry, deploy to cloud)
+      - name: Verify image
+        run: docker images fitcheck
