@@ -1,0 +1,2 @@
+ALTER TABLE workouts
+  ADD COLUMN IF NOT EXISTS location VARCHAR(100);

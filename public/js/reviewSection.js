@@ -167,7 +167,6 @@ const ReviewSection = {
           title: titleInput.value,
           body: bodyInput.value,
         });
-        Notifications.success('Review posted!');
         this.selectedRating = 0;
         form.reset();
         starInput.querySelectorAll('button').forEach(b => b.classList.remove('active'));

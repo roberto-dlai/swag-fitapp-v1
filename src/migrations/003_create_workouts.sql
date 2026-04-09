@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS workouts (
   id             SERIAL PRIMARY KEY,
   user_id        INT REFERENCES users(id) NOT NULL,
   date           DATE NOT NULL,
-  type           VARCHAR(50) DEFAULT 'generated' CHECK (type IN ('generated', 'custom')),
+  type           VARCHAR(50) DEFAULT 'cardio',
   status         VARCHAR(20) DEFAULT 'planned' CHECK (status IN ('planned', 'in_progress', 'completed', 'skipped')),
   duration_min   INT,
   notes          TEXT,

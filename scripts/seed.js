@@ -53,7 +53,7 @@ const sampleUsers = [
     password: 'password123',
     name: 'Bob Smith',
     location: 'Los Angeles',
-    unit_pref: 'metric',
+    unit_pref: 'imperial',
     fitness_goal: 'strength',
     fitness_level: 'advanced',
     equipment: ['bodyweight', 'dumbbells', 'barbell', 'kettlebell'],
@@ -145,18 +145,18 @@ async function seed() {
 
   // Create some sample workouts for the users
   const workoutData = [
-    { user_id: aliceId, date: '2026-04-01', type: 'generated', status: 'completed', duration_min: 30, calories_burned: 210, weather_temp: 72, weather_cond: 'clear' },
-    { user_id: bobId, date: '2026-04-01', type: 'generated', status: 'completed', duration_min: 45, calories_burned: 380, weather_temp: 78, weather_cond: 'partly cloudy' },
-    { user_id: aliceId, date: '2026-04-02', type: 'generated', status: 'completed', duration_min: 25, calories_burned: 175, weather_temp: 55, weather_cond: 'rain' },
-    { user_id: aliceId, date: '2026-04-03', type: 'generated', status: 'completed', duration_min: 30, calories_burned: 200, weather_temp: 68, weather_cond: 'clear' },
-    { user_id: bobId, date: '2026-04-03', type: 'custom', status: 'completed', duration_min: 60, calories_burned: 520, weather_temp: 75, weather_cond: 'clear' },
+    { user_id: aliceId, date: '2026-04-01', type: 'cardio', status: 'completed', duration_min: 30, calories_burned: 210, weather_temp: 72, weather_cond: 'clear', location: 'New York' },
+    { user_id: bobId, date: '2026-04-01', type: 'strength', status: 'completed', duration_min: 60, calories_burned: 380, weather_temp: 78, weather_cond: 'partly cloudy', location: 'San Francisco' },
+    { user_id: aliceId, date: '2026-04-02', type: 'endurance', status: 'completed', duration_min: 30, calories_burned: 175, weather_temp: 55, weather_cond: 'rain', location: 'Boston' },
+    { user_id: aliceId, date: '2026-04-03', type: 'strength', status: 'completed', duration_min: 30, calories_burned: 200, weather_temp: 68, weather_cond: 'clear', location: 'New York' },
+    { user_id: bobId, date: '2026-04-03', type: 'endurance', status: 'completed', duration_min: 60, calories_burned: 520, weather_temp: 75, weather_cond: 'clear', location: 'Miami' },
   ];
 
   for (const w of workoutData) {
     await pool.query(
-      `INSERT INTO workouts (user_id, date, type, status, duration_min, calories_burned, weather_temp, weather_cond)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-      [w.user_id, w.date, w.type, w.status, w.duration_min, w.calories_burned, w.weather_temp, w.weather_cond]
+      `INSERT INTO workouts (user_id, date, type, status, duration_min, calories_burned, weather_temp, weather_cond, location)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [w.user_id, w.date, w.type, w.status, w.duration_min, w.calories_burned, w.weather_temp, w.weather_cond, w.location]
     );
   }
   console.log(`Seeded ${workoutData.length} workouts`);

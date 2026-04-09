@@ -7,19 +7,10 @@ const { isValidWorkoutStatus, isPositiveInteger } = require('../utils/validators
 
 async function getTodayWorkout(req, res, next) {
   try {
-    const today = new Date().toISOString().split('T')[0];
-
-    // Check if there's already a workout for today
-    const existing = await workoutModel.findByUserIdAndDate(req.userId, today);
-    if (existing) {
-      const exercises = await workoutModel.findExercisesForWorkout(existing.id);
-      return res.json({ workout: { ...existing, exercises } });
-    }
-
-    // Generate a new workout
+    // Generate a workout suggestion (not saved to DB)
     const weather = await getCurrentWeather({
       location: req.userPrefs.location,
-      unit: req.userPrefs.unit_pref,
+      unit: 'imperial',
     });
     const allExercises = await exerciseModel.findAll();
 
@@ -29,32 +20,14 @@ async function getTodayWorkout(req, res, next) {
       exercises: allExercises,
     });
 
-    // Save the generated workout
-    const workout = await workoutModel.create({
-      userId: req.userId,
-      date: today,
-      type: 'generated',
-      status: 'planned',
-      durationMin: plan.duration_min,
-      weatherTemp: weather.temperature,
-      weatherCond: weather.condition,
-    });
-
-    // Save the exercises
-    if (plan.exercises.length > 0) {
-      await workoutModel.addExercisesToWorkout(workout.id, plan.exercises);
-    }
-
-    const streak = await workoutModel.getStreak(req.userId);
-
     res.json({
       workout: {
-        ...workout,
         exercises: plan.exercises,
         tips: plan.tips,
         isIndoor: plan.isIndoor,
+        weather_temp: weather.temperature,
+        weather_cond: weather.condition,
       },
-      streak,
     });
   } catch (err) {
     next(err);
@@ -93,23 +66,18 @@ async function getWeeklyPlan(req, res, next) {
 
 async function customizeToday(req, res, next) {
   try {
-    const today = new Date().toISOString().split('T')[0];
     const { workout_type } = req.body;
 
     if (!workout_type) {
       return res.status(400).json({ error: 'workout_type is required' });
     }
 
-    // Get or create today's workout
-    let workout = await workoutModel.findByUserIdAndDate(req.userId, today);
-
     const weather = await getCurrentWeather({
       location: req.userPrefs.location,
-      unit: req.userPrefs.unit_pref,
+      unit: 'imperial',
     });
     const allExercises = await exerciseModel.findAll();
 
-    // Override fitness goal with the requested type for generation
     const customPrefs = { ...req.userPrefs, fitness_goal: workout_type };
     const plan = generateDailyWorkout({
       userPrefs: customPrefs,
@@ -117,33 +85,8 @@ async function customizeToday(req, res, next) {
       exercises: allExercises,
     });
 
-    if (workout) {
-      // Clear old exercises and update
-      await workoutModel.clearExercises(workout.id);
-      workout = await workoutModel.update(workout.id, {
-        type: 'custom',
-        duration_min: plan.duration_min,
-      });
-    } else {
-      // Create new
-      workout = await workoutModel.create({
-        userId: req.userId,
-        date: today,
-        type: 'custom',
-        status: 'planned',
-        durationMin: plan.duration_min,
-        weatherTemp: weather.temperature,
-        weatherCond: weather.condition,
-      });
-    }
-
-    if (plan.exercises.length > 0) {
-      await workoutModel.addExercisesToWorkout(workout.id, plan.exercises);
-    }
-
     res.json({
       workout: {
-        ...workout,
         exercises: plan.exercises,
         tips: plan.tips,
         isIndoor: plan.isIndoor,
@@ -158,7 +101,14 @@ async function getHistory(req, res, next) {
   try {
     const workouts = await workoutModel.findHistoryByUserId(req.userId);
     const streak = await workoutModel.getStreak(req.userId);
-    res.json({ workouts, streak });
+
+    // Attach exercises to each workout for category display
+    const enriched = await Promise.all(workouts.map(async (w) => {
+      const exercises = await workoutModel.findExercisesForWorkout(w.id);
+      return { ...w, exercises };
+    }));
+
+    res.json({ workouts: enriched, streak });
   } catch (err) {
     next(err);
   }
@@ -166,17 +116,22 @@ async function getHistory(req, res, next) {
 
 async function createWorkout(req, res, next) {
   try {
-    // Check tier limit
-    const tierCheck = await checkTierLimit(req.userId, req.userPrefs.account_tier, workoutModel);
-    if (!tierCheck.allowed) {
-      return res.status(403).json({ error: tierCheck.message });
-    }
+    const { date, type, status, duration_min, notes, location } = req.body;
 
-    const { date, type, status, duration_min, notes } = req.body;
+    // Skip tier limit for completed workouts (logging past workouts)
+    if (status !== 'completed') {
+      const tierCheck = await checkTierLimit(req.userId, req.userPrefs.account_tier, workoutModel);
+      if (!tierCheck.allowed) {
+        return res.status(403).json({ error: tierCheck.message });
+      }
+    }
 
     if (!date) {
       return res.status(400).json({ error: 'Date is required' });
     }
+
+    // Remove existing workout for this date (overwrite)
+    await workoutModel.deleteByUserIdAndDate(req.userId, date);
 
     if (duration_min !== undefined && !isPositiveInteger(duration_min)) {
       return res.status(400).json({ error: 'duration_min must be a positive integer' });
@@ -186,6 +141,20 @@ async function createWorkout(req, res, next) {
       return res.status(400).json({ error: 'Invalid workout status' });
     }
 
+    // Fetch current weather in imperial for storage
+    let weatherTemp = null;
+    let weatherCond = null;
+    try {
+      const weather = await getCurrentWeather({
+        location: location || req.userPrefs.location,
+        unit: 'imperial',
+      });
+      weatherTemp = weather.temperature;
+      weatherCond = weather.condition;
+    } catch (e) {
+      // Weather fetch is optional
+    }
+
     const workout = await workoutModel.create({
       userId: req.userId,
       date,
@@ -193,6 +162,9 @@ async function createWorkout(req, res, next) {
       status: status || 'planned',
       durationMin: duration_min,
       notes,
+      weatherTemp,
+      weatherCond,
+      location: location || req.userPrefs.location,
     });
 
     res.status(201).json({ workout });

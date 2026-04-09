@@ -2,27 +2,26 @@ const WorkoutCards = {
   async load() {
     const container = document.getElementById('weekly-plan');
     try {
-      const [planData, todayData, userData] = await Promise.all([
-        API.get('/api/workouts/plan'),
-        API.get('/api/workouts/today'),
+      const [historyData, userData] = await Promise.all([
+        API.get('/api/workouts/history'),
         API.get('/api/users/me'),
       ]);
-      const todayStatus = todayData.workout?.status || 'planned';
-      const todayWeather = todayData.workout?.weather_temp
-        ? { temp: todayData.workout.weather_temp, cond: todayData.workout.weather_cond }
-        : null;
-      // Determine dominant workout category from exercises
-      const exercises = todayData.workout?.exercises || [];
-      const todayWorkoutType = this.getDominantCategory(exercises);
+
+      const completed = historyData.workouts
+        .filter(w => w.status === 'completed')
+        .slice(0, 7)
+        .reverse();
+
       const firstName = userData.user.name.split(' ')[0];
       const userLocation = userData.user.location || '';
-      const forecastUnit = planData.forecastUnit;
-      this.render(container, planData.plan, todayStatus, todayWorkoutType, firstName, userLocation, forecastUnit);
+      const unitPref = userData.user.unit_pref;
+
+      this.render(container, completed, firstName, userLocation, unitPref);
     } catch (err) {
       container.innerHTML = '';
       const div = document.createElement('div');
       div.className = 'error-state';
-      div.textContent = 'Failed to load plan: ' + err.message;
+      div.textContent = 'Failed to load history: ' + err.message;
       container.appendChild(div);
     }
   },
@@ -37,99 +36,92 @@ const WorkoutCards = {
     return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
   },
 
-  render(container, plan, todayStatus, todayWorkoutType, firstName, userLocation, forecastUnit) {
+  render(container, workouts, firstName, userLocation, unitPref) {
     container.innerHTML = '';
 
-    if (!plan || plan.length === 0) {
+    if (!workouts || workouts.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'empty-state';
-      empty.textContent = 'No workout plan available.';
+      empty.textContent = 'No completed workouts yet. Complete your first workout!';
       container.appendChild(empty);
       return;
     }
 
-    const todayStr = new Date().toISOString().split('T')[0];
     const grid = document.createElement('div');
     grid.className = 'plan-grid';
 
-    for (const day of plan) {
-      const isToday = day.date === todayStr;
-      const isCompleted = isToday && todayStatus === 'completed';
-
+    for (const workout of workouts) {
       const card = document.createElement('div');
-      card.className = 'plan-card'
-        + (day.type === 'rest' ? ' rest' : '')
-        + (isCompleted ? ' completed' : '');
+      card.className = 'plan-card completed';
+      card.style.position = 'relative';
 
+      // Delete button
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'card-delete-btn';
+      deleteBtn.textContent = '\u00d7';
+      deleteBtn.setAttribute('aria-label', 'Delete workout');
+      deleteBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        try {
+          await API.delete(`/api/workouts/${workout.id}`);
+          this.load();
+          Dashboard.loadTotalWorkouts();
+        } catch (err) {
+          Notifications.error(err.message);
+        }
+      });
+      card.appendChild(deleteBtn);
+
+      // Date
+      const date = new Date(workout.date);
+      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
       const dayName = document.createElement('div');
       dayName.className = 'day-name';
-      dayName.textContent = day.day + (isToday ? ' (Today)' : '');
+      dayName.textContent = dayNames[date.getUTCDay()];
 
       const dayDate = document.createElement('div');
       dayDate.className = 'day-date';
-      dayDate.textContent = day.date || '';
+      dayDate.textContent = workout.date.split('T')[0];
 
       card.appendChild(dayName);
       card.appendChild(dayDate);
 
-      if (day.type === 'rest') {
-        const badge = document.createElement('span');
-        badge.className = 'badge badge-rest';
-        badge.textContent = 'REST';
-        card.appendChild(badge);
-      } else {
-        // Show first name
-        const nameEl = document.createElement('div');
-        nameEl.className = 'plan-card-name';
-        nameEl.textContent = firstName;
-        card.appendChild(nameEl);
+      // Name
+      const nameEl = document.createElement('div');
+      nameEl.className = 'plan-card-name';
+      nameEl.textContent = firstName;
+      card.appendChild(nameEl);
 
-        if (isCompleted) {
-          const badge = document.createElement('span');
-          badge.className = 'badge badge-completed';
-          badge.textContent = 'DONE';
-          card.appendChild(badge);
+      // Workout category badge (read from workout.type)
+      const typeLabels = {
+        cardio: 'Cardio',
+        strength: 'Strength',
+        endurance: 'Endurance',
+      };
+      const badge = document.createElement('span');
+      badge.className = 'badge badge-completed';
+      badge.textContent = typeLabels[workout.type] || 'Cardio';
+      card.appendChild(badge);
 
-          // Show workout type for completed workout
-          if (todayWorkoutType) {
-            const typeEl = document.createElement('div');
-            typeEl.className = 'plan-card-type';
-            typeEl.textContent = todayWorkoutType;
-            card.appendChild(typeEl);
-          }
-
-          // Show temperature and location for completed workout
-          if (day.weather && day.weather.temperature !== undefined) {
-            const weatherInfo = document.createElement('div');
-            weatherInfo.className = 'plan-card-weather';
-            const unitSymbol = forecastUnit === 'celsius' ? '°C' : '°F';
-            weatherInfo.textContent = `${Math.round(day.weather.temperature)}${unitSymbol}`;
-            card.appendChild(weatherInfo);
-          }
-
-          if (userLocation) {
-            const locEl = document.createElement('div');
-            locEl.className = 'plan-card-location';
-            locEl.textContent = userLocation;
-            card.appendChild(locEl);
-          }
-
-        }
-
-        // Show forecast temperature (skip if completed, already shown above)
-        if (!isCompleted && day.weather && day.weather.temperature !== undefined) {
-          const tempEl = document.createElement('div');
-          tempEl.className = 'plan-card-weather';
-          const unitSymbol = forecastUnit === 'celsius' ? '°C' : '°F';
-          tempEl.textContent = `${Math.round(day.weather.temperature)}${unitSymbol}`;
-          card.appendChild(tempEl);
-        }
-
-        const locationBadge = document.createElement('span');
-        locationBadge.className = day.isIndoor ? 'badge badge-indoor' : 'badge badge-outdoor';
-        locationBadge.textContent = day.isIndoor ? 'Indoor' : 'Outdoor';
-        card.appendChild(locationBadge);
+      // Duration (round to nearest valid dropdown value: 0.5, 1, 1.5, 2, 2.5)
+      if (workout.duration_min) {
+        const durEl = document.createElement('div');
+        durEl.className = 'plan-card-weather';
+        const rawHrs = workout.duration_min / 60;
+        const hrs = Math.round(rawHrs * 2) / 2; // round to nearest 0.5
+        const clamped = Math.max(0.5, Math.min(2.5, hrs));
+        durEl.textContent = clamped === 1 ? '1 hr' : `${clamped} hrs`;
+        card.appendChild(durEl);
       }
+
+      // City
+      if (workout.location) {
+        const locEl = document.createElement('div');
+        locEl.className = 'plan-card-location';
+        locEl.textContent = workout.location;
+        card.appendChild(locEl);
+      }
+
 
       grid.appendChild(card);
     }

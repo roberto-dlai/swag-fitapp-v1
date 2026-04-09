@@ -24,6 +24,10 @@ async function findHistoryByUserId(userId) {
   return rows;
 }
 
+async function deleteByUserIdAndDate(userId, date) {
+  await pool.query('DELETE FROM workouts WHERE user_id = $1 AND date = $2', [userId, date]);
+}
+
 async function countByUserId(userId) {
   const { rows } = await pool.query(
     'SELECT COUNT(*)::int AS count FROM workouts WHERE user_id = $1',
@@ -32,12 +36,12 @@ async function countByUserId(userId) {
   return rows[0].count;
 }
 
-async function create({ userId, date, type, status, durationMin, caloriesBurned, notes, weatherTemp, weatherCond }) {
+async function create({ userId, date, type, status, durationMin, caloriesBurned, notes, weatherTemp, weatherCond, location }) {
   const { rows } = await pool.query(
-    `INSERT INTO workouts (user_id, date, type, status, duration_min, calories_burned, notes, weather_temp, weather_cond)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    `INSERT INTO workouts (user_id, date, type, status, duration_min, calories_burned, notes, weather_temp, weather_cond, location)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
      RETURNING *`,
-    [userId, date, type || 'generated', status || 'planned', durationMin, caloriesBurned, notes, weatherTemp, weatherCond]
+    [userId, date, type || 'generated', status || 'planned', durationMin, caloriesBurned, notes, weatherTemp, weatherCond, location]
   );
   return rows[0];
 }
@@ -126,6 +130,7 @@ module.exports = {
   create,
   update,
   remove,
+  deleteByUserIdAndDate,
   findExercisesForWorkout,
   addExercisesToWorkout,
   clearExercises,
