@@ -2,14 +2,26 @@ const config = require('../config');
 
 const OPENWEATHER_BASE_URL = 'https://api.openweathermap.org/data/2.5';
 
+const DEFAULT_TEMP_F = 70;
+const DEFAULT_TEMP_C = 21;
+
 const DEFAULT_WEATHER = {
-  temperature: 70,
+  temperature: DEFAULT_TEMP_F,
   unit: 'fahrenheit',
   condition: 'clear',
   humidity: 50,
   description: 'Default weather (API unavailable)',
   isDefault: true,
 };
+
+function fallbackWeather(unit) {
+  const isMetric = unit === 'metric';
+  return {
+    ...DEFAULT_WEATHER,
+    temperature: isMetric ? DEFAULT_TEMP_C : DEFAULT_TEMP_F,
+    unit: isMetric ? 'celsius' : 'fahrenheit',
+  };
+}
 
 /**
  * @param {object} options
@@ -41,12 +53,7 @@ async function getCurrentWeather({ location, unit = 'imperial', httpClient }) {
     };
   } catch (err) {
     console.warn('Weather API unavailable, using defaults:', err.message);
-    const isMetric = unit === 'metric';
-    return {
-      ...DEFAULT_WEATHER,
-      temperature: isMetric ? 21 : 70,
-      unit: isMetric ? 'celsius' : 'fahrenheit',
-    };
+    return fallbackWeather(unit);
   }
 }
 

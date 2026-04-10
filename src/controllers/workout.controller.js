@@ -1,6 +1,7 @@
 const workoutModel = require('../models/workout.model');
 const { getCurrentWeather } = require('../services/weather.service');
 const { isValidWorkoutStatus, isPositiveInteger } = require('../utils/validators');
+const { DEFAULT_WORKOUT_TYPE, DEFAULT_WORKOUT_STATUS } = require('../utils/constants');
 
 async function getHistory(req, res, next) {
   try {
@@ -47,8 +48,8 @@ async function createWorkout(req, res, next) {
     const workout = await workoutModel.create({
       userId: req.userId,
       date,
-      type: type || 'cardio',
-      status: status || 'planned',
+      type: type || DEFAULT_WORKOUT_TYPE,
+      status: status || DEFAULT_WORKOUT_STATUS,
       durationMin: duration_min,
       notes,
       weatherTemp,

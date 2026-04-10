@@ -1,13 +1,24 @@
 const pool = require('../config/db');
 
+// Whitelist of tables that authorize can query. Prevents SQL injection via
+// the table argument — only keys in this map can be used.
+const ALLOWED_TABLES = {
+  workouts: 'workouts',
+};
+
 /**
  * Middleware factory that checks if the authenticated user owns the requested resource.
  * Looks up the resource in the specified table and compares user_id to req.userId.
  *
- * @param {string} table - The database table to check (e.g., 'workouts')
+ * @param {string} table - The database table to check (must be in ALLOWED_TABLES)
  * @param {string} [paramName='id'] - The route parameter containing the resource ID
  */
 function authorize(table, paramName = 'id') {
+  const safeTable = ALLOWED_TABLES[table];
+  if (!safeTable) {
+    throw new Error(`authorize: unknown table "${table}"`);
+  }
+
   return async (req, res, next) => {
     try {
       const resourceId = req.params[paramName];
@@ -17,7 +28,7 @@ function authorize(table, paramName = 'id') {
       }
 
       const { rows } = await pool.query(
-        `SELECT user_id FROM ${table} WHERE id = $1`,
+        `SELECT user_id FROM ${safeTable} WHERE id = $1`,
         [resourceId]
       );
 

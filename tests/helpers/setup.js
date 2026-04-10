@@ -22,7 +22,6 @@ function getPool() {
 async function createTestDatabase() {
   const adminPool = new Pool({ connectionString: adminUrl });
   try {
-    // Check if test DB exists
     const { rows } = await adminPool.query(
       "SELECT 1 FROM pg_database WHERE datname = $1", [TEST_DB_NAME]
     );
@@ -36,11 +35,25 @@ async function createTestDatabase() {
 
 async function runMigrations() {
   const p = getPool();
+
+  // Ensure tracking table and check which migrations have already run
+  await p.query(`
+    CREATE TABLE IF NOT EXISTS schema_migrations (
+      filename    VARCHAR(255) PRIMARY KEY,
+      executed_at TIMESTAMP DEFAULT NOW()
+    )
+  `);
+  const { rows } = await p.query('SELECT filename FROM schema_migrations');
+  const applied = new Set(rows.map(r => r.filename));
+
   const migrationsDir = path.join(__dirname, '..', '..', 'src', 'migrations');
   const files = fs.readdirSync(migrationsDir).filter(f => f.endsWith('.sql')).sort();
+
   for (const file of files) {
+    if (applied.has(file)) continue;
     const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
     await p.query(sql);
+    await p.query('INSERT INTO schema_migrations (filename) VALUES ($1)', [file]);
   }
 }
 

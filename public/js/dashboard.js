@@ -16,8 +16,7 @@ const Dashboard = {
       // Load all sections in parallel
       await Promise.all([
         WeatherWidget.load(),
-        WorkoutCards.load(),
-        this.loadTotalWorkouts(),
+        this.refreshWorkouts(),
         ReviewSection.load(),
       ]);
     } catch (err) {
@@ -27,29 +26,31 @@ const Dashboard = {
 
   // === Data Loading ===
 
-  async loadTotalWorkouts() {
-    const container = document.getElementById('total-workouts');
+  /**
+   * Single history fetch shared by WorkoutCards and the Total Workouts counter.
+   */
+  async refreshWorkouts() {
     try {
       const data = await API.get('/api/workouts/history');
-      const completed = data.workouts.filter(w => w.status === 'completed');
-      container.innerHTML = '';
-
-      const count = document.createElement('div');
-      count.className = 'total-workouts-count';
-      count.textContent = completed.length;
-      container.appendChild(count);
-
-      const label = document.createElement('div');
-      label.className = 'total-workouts-label';
-      label.textContent = 'completed';
-      container.appendChild(label);
+      const workouts = data.workouts || [];
+      WorkoutCards.load(workouts);
+      this.renderTotalWorkouts(workouts);
     } catch (err) {
-      container.innerHTML = '';
-      const div = document.createElement('div');
-      div.className = 'error-state';
-      div.textContent = 'Failed to load';
-      container.appendChild(div);
+      const wcContainer = document.getElementById('weekly-plan');
+      const tcContainer = document.getElementById('total-workouts');
+      wcContainer.innerHTML = '';
+      wcContainer.appendChild(createEl('div', 'error-state', 'Failed to load history'));
+      tcContainer.innerHTML = '';
+      tcContainer.appendChild(createEl('div', 'error-state', 'Failed to load'));
     }
+  },
+
+  renderTotalWorkouts(workouts) {
+    const container = document.getElementById('total-workouts');
+    const completed = workouts.filter(w => w.status === 'completed');
+    container.innerHTML = '';
+    container.appendChild(createEl('div', 'total-workouts-count', completed.length));
+    container.appendChild(createEl('div', 'total-workouts-label', 'completed'));
   },
 
   // === Form Handlers ===
@@ -72,10 +73,9 @@ const Dashboard = {
         return;
       }
 
-      const workoutType = document.getElementById('workout-type-select').value;
+      const formType = document.getElementById('workout-type-select').value;
+      const categoryName = formValueToWorkoutType(formType);
       const durationMin = parseInt(document.getElementById('workout-duration').value, 10);
-      const typeLabels = { weight_loss: 'cardio', strength: 'strength', endurance: 'endurance' };
-      const categoryName = typeLabels[workoutType] || 'cardio';
       const location = document.getElementById('workout-location').value;
 
       try {
@@ -87,8 +87,7 @@ const Dashboard = {
           location,
         });
 
-        WorkoutCards.load();
-        this.loadTotalWorkouts();
+        this.refreshWorkouts();
       } catch (err) {
         Notifications.error(err.message);
       }
@@ -127,7 +126,6 @@ const Dashboard = {
         const data = await API.patch('/api/users/me', updates);
         this.user = data.user;
         WeatherWidget.load();
-        WorkoutCards.load();
       } catch (err) {
         Notifications.error(err.message);
       }

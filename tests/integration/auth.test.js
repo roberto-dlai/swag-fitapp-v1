@@ -105,4 +105,59 @@ describe('Auth Integration Tests', () => {
     assert.strictEqual(res.status, 200);
     assert.strictEqual(res.body.user.email, 'test1@example.com');
   });
+
+  it('PATCH /api/users/me updates unit_pref', async () => {
+    const loginRes = await request('/api/auth/login', {
+      method: 'POST',
+      body: { email: 'test1@example.com', password: 'password123' },
+    });
+    const token = loginRes.body.token;
+
+    const res = await request('/api/users/me', {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${token}` },
+      body: { unit_pref: 'metric' },
+    });
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.body.user.unit_pref, 'metric');
+  });
+
+  it('PATCH /api/users/me updates location', async () => {
+    const loginRes = await request('/api/auth/login', {
+      method: 'POST',
+      body: { email: 'test1@example.com', password: 'password123' },
+    });
+    const token = loginRes.body.token;
+
+    const res = await request('/api/users/me', {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${token}` },
+      body: { location: 'Boston' },
+    });
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.body.user.location, 'Boston');
+  });
+
+  it('PATCH /api/users/me returns 400 for invalid unit_pref', async () => {
+    const loginRes = await request('/api/auth/login', {
+      method: 'POST',
+      body: { email: 'test1@example.com', password: 'password123' },
+    });
+    const token = loginRes.body.token;
+
+    const res = await request('/api/users/me', {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${token}` },
+      body: { unit_pref: 'kelvin' },
+    });
+    assert.strictEqual(res.status, 400);
+  });
+
+  it('PATCH /api/users/me returns 401 without token', async () => {
+    const res = await request('/api/users/me', {
+      method: 'PATCH',
+      body: { unit_pref: 'metric' },
+    });
+    assert.strictEqual(res.status, 401);
+  });
 });

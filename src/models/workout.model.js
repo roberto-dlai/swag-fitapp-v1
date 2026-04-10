@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { DEFAULT_WORKOUT_TYPE, DEFAULT_WORKOUT_STATUS } = require('../utils/constants');
 
 async function findById(id) {
   const { rows } = await pool.query(
@@ -25,7 +26,7 @@ async function create({ userId, date, type, status, durationMin, notes, weatherT
     `INSERT INTO workouts (user_id, date, type, status, duration_min, notes, weather_temp, weather_cond, location)
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
      RETURNING *`,
-    [userId, date, type || 'cardio', status || 'planned', durationMin, notes, weatherTemp, weatherCond, location]
+    [userId, date, type || DEFAULT_WORKOUT_TYPE, status || DEFAULT_WORKOUT_STATUS, durationMin, notes, weatherTemp, weatherCond, location]
   );
   return rows[0];
 }
