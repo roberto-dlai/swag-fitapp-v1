@@ -51,13 +51,13 @@ jobs:
           DATABASE_URL: postgresql://fitcheck:fitcheck@localhost:5432/fitcheck_test
 
       - name: Run unit tests
-        run: node --test "tests/unit/**/*.test.js"
+        run: node --test tests/unit
         env:
           JWT_SECRET: test-secret-that-is-at-least-32-characters-long
           WEATHER_API_KEY: test-key
 
       - name: Run integration tests
-        run: node --test "tests/integration/**/*.test.js"
+        run: node --test --test-concurrency=1 tests/integration
         env:
           DATABASE_URL: postgresql://fitcheck:fitcheck@localhost:5432/fitcheck_test
           TEST_DATABASE_URL: postgresql://fitcheck:fitcheck@localhost:5432/fitcheck_test
