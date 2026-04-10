@@ -1,10 +1,5 @@
 const userModel = require('../models/user.model');
-const {
-  isValidFitnessGoal,
-  isValidFitnessLevel,
-  isValidUnitPref,
-  isPositiveInteger,
-} = require('../utils/validators');
+const { isValidUnitPref } = require('../utils/validators');
 
 async function getProfile(req, res, next) {
   try {
@@ -44,38 +39,6 @@ async function updatePreferences(req, res, next) {
         errors.push('unit_pref must be "imperial" or "metric"');
       } else {
         updates.unit_pref = req.body.unit_pref;
-      }
-    }
-
-    if (req.body.fitness_goal !== undefined) {
-      if (!isValidFitnessGoal(req.body.fitness_goal)) {
-        errors.push('Invalid fitness_goal');
-      } else {
-        updates.fitness_goal = req.body.fitness_goal;
-      }
-    }
-
-    if (req.body.fitness_level !== undefined) {
-      if (!isValidFitnessLevel(req.body.fitness_level)) {
-        errors.push('Invalid fitness_level');
-      } else {
-        updates.fitness_level = req.body.fitness_level;
-      }
-    }
-
-    if (req.body.equipment !== undefined) {
-      if (!Array.isArray(req.body.equipment)) {
-        errors.push('Equipment must be an array');
-      } else {
-        updates.equipment = req.body.equipment;
-      }
-    }
-
-    if (req.body.weekly_frequency !== undefined) {
-      if (!isPositiveInteger(req.body.weekly_frequency) || req.body.weekly_frequency > 7) {
-        errors.push('weekly_frequency must be between 1 and 7');
-      } else {
-        updates.weekly_frequency = req.body.weekly_frequency;
       }
     }
 

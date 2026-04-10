@@ -1,9 +1,4 @@
-const {
-  FITNESS_GOALS,
-  FITNESS_LEVELS,
-  UNIT_PREFS,
-  WORKOUT_STATUSES,
-} = require('./constants');
+const { UNIT_PREFS, WORKOUT_STATUSES } = require('./constants');
 
 function isValidEmail(email) {
   if (typeof email !== 'string') return false;
@@ -19,20 +14,8 @@ function isValidRating(rating) {
   return Number.isInteger(rating) && rating >= 1 && rating <= 5;
 }
 
-function isPositiveNumber(value) {
-  return typeof value === 'number' && !isNaN(value) && value > 0;
-}
-
 function isPositiveInteger(value) {
   return Number.isInteger(value) && value > 0;
-}
-
-function isValidFitnessGoal(goal) {
-  return FITNESS_GOALS.includes(goal);
-}
-
-function isValidFitnessLevel(level) {
-  return FITNESS_LEVELS.includes(level);
 }
 
 function isValidUnitPref(unit) {
@@ -59,10 +42,7 @@ module.exports = {
   isValidEmail,
   isValidPassword,
   isValidRating,
-  isPositiveNumber,
   isPositiveInteger,
-  isValidFitnessGoal,
-  isValidFitnessLevel,
   isValidUnitPref,
   isValidWorkoutStatus,
   sanitizePrimitive,

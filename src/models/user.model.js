@@ -10,7 +10,7 @@ async function findByEmail(email) {
 
 async function findById(id) {
   const { rows } = await pool.query(
-    'SELECT id, email, name, location, unit_pref, fitness_goal, fitness_level, equipment, weekly_frequency, account_tier, created_at FROM users WHERE id = $1',
+    'SELECT id, email, name, location, unit_pref, created_at FROM users WHERE id = $1',
     [id]
   );
   return rows[0] || null;
@@ -20,17 +20,14 @@ async function create({ email, passwordHash, name }) {
   const { rows } = await pool.query(
     `INSERT INTO users (email, password_hash, name)
      VALUES ($1, $2, $3)
-     RETURNING id, email, name, location, unit_pref, fitness_goal, fitness_level, equipment, weekly_frequency, account_tier, created_at`,
+     RETURNING id, email, name, location, unit_pref, created_at`,
     [email, passwordHash, name]
   );
   return rows[0];
 }
 
 async function updatePreferences(id, updates) {
-  const allowedFields = [
-    'name', 'location', 'unit_pref', 'fitness_goal', 'fitness_level',
-    'equipment', 'weekly_frequency',
-  ];
+  const allowedFields = ['name', 'location', 'unit_pref'];
 
   const setClauses = [];
   const values = [];
@@ -51,7 +48,7 @@ async function updatePreferences(id, updates) {
   values.push(id);
   const { rows } = await pool.query(
     `UPDATE users SET ${setClauses.join(', ')} WHERE id = $${paramIndex}
-     RETURNING id, email, name, location, unit_pref, fitness_goal, fitness_level, equipment, weekly_frequency, account_tier, created_at`,
+     RETURNING id, email, name, location, unit_pref, created_at`,
     values
   );
   return rows[0];

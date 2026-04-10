@@ -1,7 +1,7 @@
 const { describe, it, before, after } = require('node:test');
 const assert = require('node:assert/strict');
-const http = require('node:http');
 const { setupTestDb, teardownTestDb } = require('../helpers/setup');
+const { requestFactory } = require('../helpers/http');
 
 // Point DATABASE_URL at the test database before requiring app
 const baseDbUrl = process.env.DATABASE_URL || 'postgresql://fitcheck:fitcheck@localhost:5432/fitcheck';
@@ -13,41 +13,13 @@ process.env.CORS_ORIGIN = 'http://localhost:3000';
 const app = require('../../src/app');
 
 let server;
-let baseUrl;
-
-function request(path, options = {}) {
-  return new Promise((resolve, reject) => {
-    const url = new URL(path, baseUrl);
-    const body = options.body ? JSON.stringify(options.body) : null;
-    const req = http.request(url, {
-      method: options.method || 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-    }, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        try {
-          resolve({ status: res.statusCode, body: JSON.parse(data) });
-        } catch {
-          resolve({ status: res.statusCode, body: data });
-        }
-      });
-    });
-    req.on('error', reject);
-    if (body) req.write(body);
-    req.end();
-  });
-}
+let request;
 
 describe('Auth Integration Tests', () => {
   before(async () => {
     await setupTestDb();
     server = app.listen(0);
-    const addr = server.address();
-    baseUrl = `http://127.0.0.1:${addr.port}`;
+    request = requestFactory(`http://127.0.0.1:${server.address().port}`);
   });
 
   after(async () => {

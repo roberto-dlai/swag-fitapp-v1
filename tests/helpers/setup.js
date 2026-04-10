@@ -46,9 +46,7 @@ async function runMigrations() {
 
 async function cleanTables() {
   const p = getPool();
-  await p.query('DELETE FROM workout_exercises');
   await p.query('DELETE FROM workouts');
-  await p.query('DELETE FROM exercises');
   await p.query('DELETE FROM users');
 }
 

@@ -8,14 +8,6 @@ async function findById(id) {
   return rows[0] || null;
 }
 
-async function findByUserIdAndDate(userId, date) {
-  const { rows } = await pool.query(
-    'SELECT * FROM workouts WHERE user_id = $1 AND date = $2 ORDER BY created_at DESC LIMIT 1',
-    [userId, date]
-  );
-  return rows[0] || null;
-}
-
 async function findHistoryByUserId(userId) {
   const { rows } = await pool.query(
     'SELECT * FROM workouts WHERE user_id = $1 ORDER BY date DESC',
@@ -28,26 +20,18 @@ async function deleteByUserIdAndDate(userId, date) {
   await pool.query('DELETE FROM workouts WHERE user_id = $1 AND date = $2', [userId, date]);
 }
 
-async function countByUserId(userId) {
+async function create({ userId, date, type, status, durationMin, notes, weatherTemp, weatherCond, location }) {
   const { rows } = await pool.query(
-    'SELECT COUNT(*)::int AS count FROM workouts WHERE user_id = $1',
-    [userId]
-  );
-  return rows[0].count;
-}
-
-async function create({ userId, date, type, status, durationMin, caloriesBurned, notes, weatherTemp, weatherCond, location }) {
-  const { rows } = await pool.query(
-    `INSERT INTO workouts (user_id, date, type, status, duration_min, calories_burned, notes, weather_temp, weather_cond, location)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    `INSERT INTO workouts (user_id, date, type, status, duration_min, notes, weather_temp, weather_cond, location)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
      RETURNING *`,
-    [userId, date, type || 'generated', status || 'planned', durationMin, caloriesBurned, notes, weatherTemp, weatherCond, location]
+    [userId, date, type || 'cardio', status || 'planned', durationMin, notes, weatherTemp, weatherCond, location]
   );
   return rows[0];
 }
 
 async function update(id, updates) {
-  const allowedFields = ['status', 'duration_min', 'calories_burned', 'notes', 'type'];
+  const allowedFields = ['status', 'duration_min', 'notes', 'type'];
   const setClauses = [];
   const values = [];
   let paramIndex = 1;
@@ -77,62 +61,11 @@ async function remove(id) {
   return rowCount > 0;
 }
 
-async function findExercisesForWorkout(workoutId) {
-  const { rows } = await pool.query(
-    `SELECT we.*, e.name, e.category, e.muscle_group, e.equipment, e.calories_per_min
-     FROM workout_exercises we
-     JOIN exercises e ON we.exercise_id = e.id
-     WHERE we.workout_id = $1
-     ORDER BY we.order_index`,
-    [workoutId]
-  );
-  return rows;
-}
-
-async function addExercisesToWorkout(workoutId, exercises) {
-  for (const ex of exercises) {
-    await pool.query(
-      `INSERT INTO workout_exercises (workout_id, exercise_id, sets, reps, duration_min, order_index)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [workoutId, ex.exercise_id, ex.sets, ex.reps, ex.duration_min, ex.order_index]
-    );
-  }
-}
-
-async function clearExercises(workoutId) {
-  await pool.query('DELETE FROM workout_exercises WHERE workout_id = $1', [workoutId]);
-}
-
-async function getStreak(userId) {
-  const { rows } = await pool.query(
-    `WITH dates AS (
-       SELECT DISTINCT date FROM workouts
-       WHERE user_id = $1 AND status = 'completed'
-       ORDER BY date DESC
-     ),
-     numbered AS (
-       SELECT date, date - (ROW_NUMBER() OVER (ORDER BY date DESC))::int * INTERVAL '1 day' AS grp
-       FROM dates
-     )
-     SELECT COUNT(*)::int AS streak
-     FROM numbered
-     WHERE grp = (SELECT grp FROM numbered LIMIT 1)`,
-    [userId]
-  );
-  return rows[0]?.streak || 0;
-}
-
 module.exports = {
   findById,
-  findByUserIdAndDate,
   findHistoryByUserId,
-  countByUserId,
+  deleteByUserIdAndDate,
   create,
   update,
   remove,
-  deleteByUserIdAndDate,
-  findExercisesForWorkout,
-  addExercisesToWorkout,
-  clearExercises,
-  getStreak,
 };

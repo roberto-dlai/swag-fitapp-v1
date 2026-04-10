@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FitCheck — Dashboard</title>
-  <link rel="stylesheet" href="/css/styles.css?v=5">
+  <link rel="stylesheet" href="/css/styles.css?v=7">
 </head>
 <body>
   <div class="dashboard">
@@ -15,7 +15,6 @@
         <span class="header-powered-by">Powered by DeepLearning.ai</span>
       </div>
       <div class="header-right">
-        <span id="streak-badge" class="streak-badge hidden" aria-label="Workout streak"></span>
         <span id="user-name" class="user-name"></span>
         <button id="logout-btn" class="btn btn-outline btn-sm">Log Out</button>
       </div>
@@ -24,48 +23,45 @@
     <!-- Dashboard Grid -->
     <div class="dashboard-grid">
 
-      <!-- Today's Workout -->
-      <section class="card today-workout" aria-label="Today's workout">
+      <!-- New Workout -->
+      <section class="card" aria-label="New workout">
         <div class="card-header">
           <h2>New Workout</h2>
-          <div class="workout-controls">
-            <div class="workout-field">
-              <label for="workout-type-select" class="select-label">Workout Type</label>
-              <select id="workout-type-select" class="select-sm" aria-label="Select workout type">
-                <option value="weight_loss">Cardio</option>
-                <option value="strength">Strength</option>
-                <option value="endurance">Endurance</option>
-              </select>
-            </div>
-            <div class="workout-field">
-              <label for="workout-date" class="select-label">Date</label>
-              <input type="date" id="workout-date" class="select-sm" aria-label="Workout date">
-            </div>
-            <div class="workout-field">
-              <label for="workout-duration" class="select-label">Duration (hrs)</label>
-              <select id="workout-duration" class="select-sm" aria-label="Workout duration">
-                <option value="30">0.5</option>
-                <option value="60" selected>1</option>
-                <option value="90">1.5</option>
-                <option value="120">2</option>
-                <option value="150">2.5</option>
-              </select>
-            </div>
-            <div class="workout-field">
-              <label for="workout-location" class="select-label">Location</label>
-              <select id="workout-location" class="select-sm" aria-label="Select location">
-                <option value="Boston">Boston</option>
-                <option value="Chicago">Chicago</option>
-                <option value="Miami">Miami</option>
-                <option value="New York" selected>New York</option>
-                <option value="San Francisco">San Francisco</option>
-                <option value="Seattle">Seattle</option>
-              </select>
-            </div>
-          </div>
         </div>
-        <div id="today-workout">
-          <div class="loading-state"><span class="loading-spinner"></span> Loading...</div>
+        <div class="workout-controls">
+          <div class="workout-field">
+            <label for="workout-type-select" class="select-label">Workout Type</label>
+            <select id="workout-type-select" class="select-sm" aria-label="Select workout type">
+              <option value="weight_loss">Cardio</option>
+              <option value="strength">Strength</option>
+              <option value="endurance">Endurance</option>
+            </select>
+          </div>
+          <div class="workout-field">
+            <label for="workout-date" class="select-label">Date</label>
+            <input type="date" id="workout-date" class="select-sm" aria-label="Workout date">
+          </div>
+          <div class="workout-field">
+            <label for="workout-duration" class="select-label">Duration (hrs)</label>
+            <select id="workout-duration" class="select-sm" aria-label="Workout duration">
+              <option value="30">0.5</option>
+              <option value="60" selected>1</option>
+              <option value="90">1.5</option>
+              <option value="120">2</option>
+              <option value="150">2.5</option>
+            </select>
+          </div>
+          <div class="workout-field">
+            <label for="workout-location" class="select-label">Location</label>
+            <select id="workout-location" class="select-sm" aria-label="Select location">
+              <option value="Boston">Boston</option>
+              <option value="Chicago">Chicago</option>
+              <option value="Miami">Miami</option>
+              <option value="New York" selected>New York</option>
+              <option value="San Francisco">San Francisco</option>
+              <option value="Seattle">Seattle</option>
+            </select>
+          </div>
         </div>
         <div class="workout-log-bar">
           <button id="complete-workout-btn" class="btn btn-success btn-sm">Add Workout</button>
@@ -92,14 +88,15 @@
         </div>
       </section>
 
-      <!-- 7-Day Plan -->
+      <!-- Recent Workouts -->
       <section class="card full-width" aria-label="Recent workout history">
         <div class="card-header">
           <h2>Recent Workouts</h2>
         </div>
         <div id="weekly-plan">
           <div class="loading-state"><span class="loading-spinner"></span> Loading...</div>
-        </div>      </section>
+        </div>
+      </section>
 
       <!-- Profile / Preferences -->
       <section class="card" aria-label="Profile and preferences">
@@ -135,12 +132,12 @@
 
   <div id="toast-container" class="toast-container"></div>
 
-  <script src="/js/api.js?v=5"></script>
-  <script src="/js/notifications.js?v=5"></script>
-  <script src="/js/weatherWidget.js?v=5"></script>
-  <script src="/js/workoutCards.js?v=5"></script>
-  <script src="/js/reviewSection.js?v=5"></script>
-  <script src="/js/dashboard.js?v=5"></script>
-  <script src="/js/app.js?v=5"></script>
+  <script src="/js/api.js?v=7"></script>
+  <script src="/js/notifications.js?v=7"></script>
+  <script src="/js/weatherWidget.js?v=7"></script>
+  <script src="/js/workoutCards.js?v=7"></script>
+  <script src="/js/reviewSection.js?v=7"></script>
+  <script src="/js/dashboard.js?v=7"></script>
+  <script src="/js/app.js?v=7"></script>
 </body>
 </html>

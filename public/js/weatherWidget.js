@@ -19,11 +19,11 @@ const WeatherWidget = {
     const widget = document.createElement('div');
     widget.className = 'weather-widget';
 
-    // Temperature
+    // Temperature (backend already returns in user's unit)
     const tempEl = document.createElement('div');
     tempEl.className = 'weather-temp';
-    const unitSymbol = weather.unit === 'celsius' ? '°C' : '°F';
-    tempEl.textContent = `${weather.temperature}${unitSymbol}`;
+    const unit = weather.unit === 'celsius' ? '°C' : '°F';
+    tempEl.textContent = `${weather.temperature}${unit}`;
 
     // Details
     const details = document.createElement('div');
@@ -48,12 +48,14 @@ const WeatherWidget = {
     if (weather.isDefault) {
       const notice = document.createElement('div');
       notice.className = 'weather-tip';
-      notice.textContent = 'Using default weather data. Set your location in Preferences for live weather.';
+      notice.textContent = 'Using default weather data. Live weather is unavailable.';
       container.appendChild(notice);
     }
 
-    // Hydration tip (>85°F or >29°C)
-    const tempF = weather.unit === 'celsius' ? (weather.temperature * 9 / 5) + 32 : weather.temperature;
+    // Hydration tip when temperature exceeds 85°F (convert celsius to F for check)
+    const tempF = weather.unit === 'celsius'
+      ? (weather.temperature * 9 / 5) + 32
+      : weather.temperature;
     if (tempF > 85) {
       const tip = document.createElement('div');
       tip.className = 'weather-tip';
