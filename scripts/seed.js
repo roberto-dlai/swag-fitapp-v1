@@ -29,7 +29,6 @@ function buildSampleReviews(aliceId, bobId) {
     {
       userId: aliceId,
       userName: 'Alice Johnson',
-      workoutId: 1,
       rating: 5,
       title: 'Great beginner workout!',
       body: 'The squat progression felt right for my level. Not too easy, not too hard.',
@@ -40,7 +39,6 @@ function buildSampleReviews(aliceId, bobId) {
     {
       userId: bobId,
       userName: 'Bob Smith',
-      workoutId: 2,
       rating: 4,
       title: 'Solid full-body session',
       body: 'Loved the combination of deadlifts and kettlebell swings. Great for building power.',
@@ -51,7 +49,6 @@ function buildSampleReviews(aliceId, bobId) {
     {
       userId: aliceId,
       userName: 'Alice Johnson',
-      workoutId: 3,
       rating: 4,
       title: 'Nice indoor alternative',
       body: 'It was raining so I switched to indoor exercises. The jump rope cardio was intense!',
@@ -114,16 +111,10 @@ async function seed() {
   const reviewsCollection = db.collection('reviews');
 
   await reviewsCollection.createIndex({ userId: 1 });
-  await reviewsCollection.createIndex({ workoutId: 1 });
 
   const sampleReviews = buildSampleReviews(aliceId, bobId);
-  for (const review of sampleReviews) {
-    await reviewsCollection.updateOne(
-      { userId: review.userId, workoutId: review.workoutId },
-      { $set: review },
-      { upsert: true }
-    );
-  }
+  // Seed is destructive: deleteMany was already called above, so insertMany is safe.
+  await reviewsCollection.insertMany(sampleReviews);
   console.log(`Seeded ${sampleReviews.length} reviews in MongoDB`);
 
   await pool.end();

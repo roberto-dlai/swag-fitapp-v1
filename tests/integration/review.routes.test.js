@@ -52,7 +52,6 @@ describe('Review Routes Integration Tests', () => {
       method: 'POST',
       headers: authHeader(userToken),
       body: {
-        workoutId: 123,
         rating: 5,
         title: 'Solid session',
         body: 'Really enjoyed this one',
@@ -69,7 +68,7 @@ describe('Review Routes Integration Tests', () => {
     const res = await request('/api/reviews', {
       method: 'POST',
       headers: authHeader(userToken),
-      body: { workoutId: 123, rating: 6, body: 'Too high' },
+      body: { rating: 6, body: 'Too high' },
     });
     assert.strictEqual(res.status, 400);
   });
@@ -78,16 +77,7 @@ describe('Review Routes Integration Tests', () => {
     const res = await request('/api/reviews', {
       method: 'POST',
       headers: authHeader(userToken),
-      body: { workoutId: 123, rating: 4 },
-    });
-    assert.strictEqual(res.status, 400);
-  });
-
-  it('POST /api/reviews returns 400 when workoutId is missing', async () => {
-    const res = await request('/api/reviews', {
-      method: 'POST',
-      headers: authHeader(userToken),
-      body: { rating: 4, body: 'No workout id' },
+      body: { rating: 4 },
     });
     assert.strictEqual(res.status, 400);
   });

@@ -1,4 +1,4 @@
-const { UNIT_PREFS, WORKOUT_STATUSES } = require('./constants');
+const { UNIT_PREFS, WORKOUT_STATUSES, WORKOUT_TYPES } = require('./constants');
 
 function isValidEmail(email) {
   if (typeof email !== 'string') return false;
@@ -26,6 +26,10 @@ function isValidWorkoutStatus(status) {
   return WORKOUT_STATUSES.includes(status);
 }
 
+function isValidWorkoutType(type) {
+  return WORKOUT_TYPES.includes(type);
+}
+
 /**
  * Sanitize a value to ensure it is a primitive (not an object).
  * Prevents MongoDB operator injection (e.g., { $gt: "" }).
@@ -45,5 +49,6 @@ module.exports = {
   isPositiveInteger,
   isValidUnitPref,
   isValidWorkoutStatus,
+  isValidWorkoutType,
   sanitizePrimitive,
 };

@@ -72,19 +72,6 @@ const ReviewSection = {
     body.textContent = review.body;
     card.appendChild(body);
 
-    // Tags
-    if (review.tags && review.tags.length > 0) {
-      const tags = document.createElement('div');
-      tags.className = 'review-tags';
-      for (const tag of review.tags) {
-        const tagEl = document.createElement('span');
-        tagEl.className = 'review-tag';
-        tagEl.textContent = tag;
-        tags.appendChild(tagEl);
-      }
-      card.appendChild(tags);
-    }
-
     return card;
   },
 
@@ -162,7 +149,6 @@ const ReviewSection = {
       }
       try {
         await API.post('/api/reviews', {
-          workoutId: 1,
           rating: this.selectedRating,
           title: titleInput.value,
           body: bodyInput.value,

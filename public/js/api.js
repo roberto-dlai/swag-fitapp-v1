@@ -33,10 +33,23 @@ const API = {
       return;
     }
 
-    const data = await response.json();
+    // Attempt to parse JSON, but tolerate non-JSON responses (e.g. HTML
+    // error pages from the proxy, rate limiter, or bad gateway).
+    const contentType = response.headers.get('content-type') || '';
+    let data = null;
+    if (contentType.includes('application/json')) {
+      try {
+        data = await response.json();
+      } catch {
+        data = null;
+      }
+    } else {
+      // Drain the body so the connection can be reused.
+      try { await response.text(); } catch { /* ignore */ }
+    }
 
     if (!response.ok) {
-      const message = data.error || data.errors?.join(', ') || 'Something went wrong';
+      const message = (data && (data.error || data.errors?.join(', '))) || `Request failed (${response.status})`;
       throw new Error(message);
     }
 

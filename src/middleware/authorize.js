@@ -14,13 +14,13 @@ const ALLOWED_TABLES = {
  * @param {string} [paramName='id'] - The route parameter containing the resource ID
  */
 function authorize(table, paramName = 'id') {
-  const safeTable = ALLOWED_TABLES[table];
-  if (!safeTable) {
-    throw new Error(`authorize: unknown table "${table}"`);
-  }
-
   return async (req, res, next) => {
     try {
+      const safeTable = ALLOWED_TABLES[table];
+      if (!safeTable) {
+        return next(new Error(`authorize: unknown table "${table}"`));
+      }
+
       const resourceId = req.params[paramName];
 
       if (!resourceId) {

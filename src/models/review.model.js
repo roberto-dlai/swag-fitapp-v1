@@ -16,19 +16,10 @@ async function findAll({ page = 1, limit = 20 } = {}) {
   return reviews;
 }
 
-async function findByWorkoutId(workoutId) {
-  const safeId = sanitizePrimitive(workoutId);
-  return getCollection()
-    .find({ workoutId: Number(safeId) })
-    .sort({ createdAt: -1 })
-    .toArray();
-}
-
-async function create({ userId, userName, workoutId, rating, title, body, tags, tips }) {
+async function create({ userId, userName, rating, title, body, tags, tips }) {
   const doc = {
     userId: Number(sanitizePrimitive(userId)),
     userName: sanitizePrimitive(userName),
-    workoutId: Number(sanitizePrimitive(workoutId)),
     rating: Number(sanitizePrimitive(rating)),
     title: sanitizePrimitive(title),
     body: sanitizePrimitive(body),
@@ -41,4 +32,4 @@ async function create({ userId, userName, workoutId, rating, title, body, tags, 
   return { ...doc, _id: result.insertedId };
 }
 
-module.exports = { findAll, findByWorkoutId, create };
+module.exports = { findAll, create };

@@ -15,13 +15,16 @@ async function getReviews(req, res, next) {
 
 async function createReview(req, res, next) {
   try {
-    const { workoutId, rating, title, body, tags, tips } = req.body;
+    const { rating, title, body, tags, tips } = req.body;
 
     const errors = [];
 
-    if (!workoutId) errors.push('workoutId is required');
-    if (rating === undefined || !isValidRating(rating)) errors.push('rating must be an integer between 1 and 5');
-    if (!body || typeof body !== 'string' || body.trim().length === 0) errors.push('body is required');
+    if (rating === undefined || !isValidRating(rating)) {
+      errors.push('rating must be an integer between 1 and 5');
+    }
+    if (!body || typeof body !== 'string' || body.trim().length === 0) {
+      errors.push('body is required');
+    }
 
     if (errors.length > 0) {
       return res.status(400).json({ errors });
@@ -30,7 +33,6 @@ async function createReview(req, res, next) {
     const review = await reviewModel.create({
       userId: req.userId,
       userName: req.userPrefs.name,
-      workoutId,
       rating,
       title: title || '',
       body: body.trim(),

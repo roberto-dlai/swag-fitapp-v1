@@ -1,6 +1,10 @@
 const workoutModel = require('../models/workout.model');
 const { getCurrentWeather } = require('../services/weather.service');
-const { isValidWorkoutStatus, isPositiveInteger } = require('../utils/validators');
+const {
+  isValidWorkoutStatus,
+  isValidWorkoutType,
+  isPositiveInteger,
+} = require('../utils/validators');
 const { DEFAULT_WORKOUT_TYPE, DEFAULT_WORKOUT_STATUS } = require('../utils/constants');
 
 async function getHistory(req, res, next) {
@@ -28,8 +32,9 @@ async function createWorkout(req, res, next) {
       return res.status(400).json({ error: 'Invalid workout status' });
     }
 
-    // Remove existing workout for this date (overwrite)
-    await workoutModel.deleteByUserIdAndDate(req.userId, date);
+    if (type && !isValidWorkoutType(type)) {
+      return res.status(400).json({ error: 'Invalid workout type' });
+    }
 
     // Fetch current weather in imperial for audit trail (optional)
     let weatherTemp = null;
@@ -45,7 +50,9 @@ async function createWorkout(req, res, next) {
       // Weather fetch is optional
     }
 
-    const workout = await workoutModel.create({
+    // Atomic replace: deletes any existing workout for this date and inserts
+    // the new one in a single transaction so a failed insert cannot lose data.
+    const workout = await workoutModel.upsertByUserDate({
       userId: req.userId,
       date,
       type: type || DEFAULT_WORKOUT_TYPE,
@@ -75,16 +82,25 @@ async function updateWorkout(req, res, next) {
       updates.status = req.body.status;
     }
 
+    if (req.body.type !== undefined) {
+      if (!isValidWorkoutType(req.body.type)) {
+        return res.status(400).json({ error: 'Invalid workout type' });
+      }
+      updates.type = req.body.type;
+    }
+
     if (req.body.duration_min !== undefined) {
+      if (!isPositiveInteger(req.body.duration_min)) {
+        return res.status(400).json({ error: 'duration_min must be a positive integer' });
+      }
       updates.duration_min = req.body.duration_min;
     }
 
     if (req.body.notes !== undefined) {
+      if (typeof req.body.notes !== 'string') {
+        return res.status(400).json({ error: 'notes must be a string' });
+      }
       updates.notes = req.body.notes;
-    }
-
-    if (req.body.type !== undefined) {
-      updates.type = req.body.type;
     }
 
     const workout = await workoutModel.update(id, updates);
