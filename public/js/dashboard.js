@@ -78,6 +78,17 @@ const Dashboard = {
       const durationMin = parseInt(document.getElementById('workout-duration').value, 10);
       const location = document.getElementById('workout-location').value;
 
+      if (!Number.isInteger(durationMin) || durationMin <= 0) {
+        Notifications.error('Please select a duration');
+        return;
+      }
+      if (!location) {
+        Notifications.error('Please select a location');
+        return;
+      }
+
+      // Prevent double-submit while the request is in flight
+      completeBtn.disabled = true;
       try {
         await API.post('/api/workouts', {
           date: selectedDate,
@@ -87,9 +98,11 @@ const Dashboard = {
           location,
         });
 
-        this.refreshWorkouts();
+        await this.refreshWorkouts();
       } catch (err) {
         Notifications.error(err.message);
+      } finally {
+        completeBtn.disabled = false;
       }
     });
   },

@@ -1,11 +1,12 @@
 const { MongoClient } = require('mongodb');
 const config = require('./index');
 
-const client = new MongoClient(config.mongodbUri);
-
-let db;
+let client = null;
+let db = null;
 
 async function connectMongo() {
+  if (db) return db;
+  client = new MongoClient(config.mongodbUri);
   await client.connect();
   db = client.db();
   console.log('Connected to MongoDB');
@@ -20,7 +21,11 @@ function getDb() {
 }
 
 async function closeMongo() {
-  await client.close();
+  if (client) {
+    await client.close();
+  }
+  client = null;
+  db = null;
 }
 
 module.exports = { connectMongo, getDb, closeMongo };

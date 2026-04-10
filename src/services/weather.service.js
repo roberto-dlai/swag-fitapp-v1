@@ -57,4 +57,4 @@ async function getCurrentWeather({ location, unit = 'imperial', httpClient }) {
   }
 }
 
-module.exports = { getCurrentWeather, DEFAULT_WEATHER };
+module.exports = { getCurrentWeather };
