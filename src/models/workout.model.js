@@ -1,5 +1,5 @@
 const pool = require('../config/db');
-const { DEFAULT_WORKOUT_TYPE, DEFAULT_WORKOUT_STATUS } = require('../utils/constants');
+const { DEFAULT_WORKOUT_TYPE } = require('../utils/constants');
 
 async function findById(id) {
   const { rows } = await pool.query(
@@ -21,12 +21,12 @@ async function deleteByUserIdAndDate(userId, date) {
   await pool.query('DELETE FROM workouts WHERE user_id = $1 AND date = $2', [userId, date]);
 }
 
-async function create({ userId, date, type, status, durationMin, notes, weatherTemp, weatherCond, location }) {
+async function create({ userId, date, type, durationMin, location }) {
   const { rows } = await pool.query(
-    `INSERT INTO workouts (user_id, date, type, status, duration_min, notes, weather_temp, weather_cond, location)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    `INSERT INTO workouts (user_id, date, type, duration_min, location)
+     VALUES ($1, $2, $3, $4, $5)
      RETURNING *`,
-    [userId, date, type || DEFAULT_WORKOUT_TYPE, status || DEFAULT_WORKOUT_STATUS, durationMin, notes, weatherTemp, weatherCond, location]
+    [userId, date, type || DEFAULT_WORKOUT_TYPE, durationMin, location]
   );
   return rows[0];
 }
@@ -36,16 +36,16 @@ async function create({ userId, date, type, status, durationMin, notes, weatherT
  * Wraps the delete+insert in a transaction so a failed insert cannot lose
  * the previous row.
  */
-async function upsertByUserDate({ userId, date, type, status, durationMin, notes, weatherTemp, weatherCond, location }) {
+async function upsertByUserDate({ userId, date, type, durationMin, location }) {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     await client.query('DELETE FROM workouts WHERE user_id = $1 AND date = $2', [userId, date]);
     const { rows } = await client.query(
-      `INSERT INTO workouts (user_id, date, type, status, duration_min, notes, weather_temp, weather_cond, location)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `INSERT INTO workouts (user_id, date, type, duration_min, location)
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
-      [userId, date, type || DEFAULT_WORKOUT_TYPE, status || DEFAULT_WORKOUT_STATUS, durationMin, notes, weatherTemp, weatherCond, location]
+      [userId, date, type || DEFAULT_WORKOUT_TYPE, durationMin, location]
     );
     await client.query('COMMIT');
     return rows[0];
@@ -58,7 +58,7 @@ async function upsertByUserDate({ userId, date, type, status, durationMin, notes
 }
 
 async function update(id, updates) {
-  const allowedFields = ['status', 'duration_min', 'notes', 'type'];
+  const allowedFields = ['duration_min', 'type'];
   const setClauses = [];
   const values = [];
   let paramIndex = 1;

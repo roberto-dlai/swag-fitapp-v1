@@ -43,8 +43,8 @@ describe('Workout Routes Integration Tests', () => {
 
     // Seed a workout owned by user1
     await pool.query(
-      `INSERT INTO workouts (user_id, date, type, status, duration_min, location)
-       VALUES ($1, '2026-04-01', 'cardio', 'completed', 30, 'New York')`,
+      `INSERT INTO workouts (user_id, date, type, duration_min, location)
+       VALUES ($1, '2026-04-01', 'cardio', 30, 'New York')`,
       [user1Id]
     );
 
@@ -64,7 +64,6 @@ describe('Workout Routes Integration Tests', () => {
       body: {
         date: '2099-01-01',
         type: 'cardio',
-        status: 'completed',
         duration_min: 60,
         location: 'Boston',
       },
@@ -80,7 +79,6 @@ describe('Workout Routes Integration Tests', () => {
       body: {
         date: '2026-04-05',
         type: 'strength',
-        status: 'completed',
         duration_min: 60,
         location: 'Boston',
       },
@@ -96,13 +94,13 @@ describe('Workout Routes Integration Tests', () => {
     await request('/api/workouts', {
       method: 'POST',
       headers: authHeader(user2Token),
-      body: { date: '2026-04-06', type: 'cardio', status: 'completed', duration_min: 30 },
+      body: { date: '2026-04-06', type: 'cardio', duration_min: 30, location: 'Boston' },
     });
     // Overwrite
     const res = await request('/api/workouts', {
       method: 'POST',
       headers: authHeader(user2Token),
-      body: { date: '2026-04-06', type: 'endurance', status: 'completed', duration_min: 90 },
+      body: { date: '2026-04-06', type: 'endurance', duration_min: 90, location: 'Boston' },
     });
     assert.strictEqual(res.status, 201);
     assert.strictEqual(res.body.workout.type, 'endurance');
@@ -129,7 +127,7 @@ describe('Workout Routes Integration Tests', () => {
     const res = await request(`/api/workouts/${workoutId}`, {
       method: 'PATCH',
       headers: authHeader(user2Token),
-      body: { status: 'skipped' },
+      body: { type: 'strength' },
     });
     assert.strictEqual(res.status, 403);
   });

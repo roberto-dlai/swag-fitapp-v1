@@ -1,4 +1,4 @@
-const { UNIT_PREFS, WORKOUT_STATUSES, WORKOUT_TYPES } = require('./constants');
+const { UNIT_PREFS, WORKOUT_TYPES } = require('./constants');
 
 function isValidEmail(email) {
   if (typeof email !== 'string') return false;
@@ -20,10 +20,6 @@ function isPositiveInteger(value) {
 
 function isValidUnitPref(unit) {
   return UNIT_PREFS.includes(unit);
-}
-
-function isValidWorkoutStatus(status) {
-  return WORKOUT_STATUSES.includes(status);
 }
 
 function isValidWorkoutType(type) {
@@ -48,7 +44,6 @@ module.exports = {
   isValidRating,
   isPositiveInteger,
   isValidUnitPref,
-  isValidWorkoutStatus,
   isValidWorkoutType,
   sanitizePrimitive,
 };

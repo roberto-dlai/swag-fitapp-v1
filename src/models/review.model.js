@@ -16,15 +16,13 @@ async function findAll({ page = 1, limit = 20 } = {}) {
   return reviews;
 }
 
-async function create({ userId, userName, rating, title, body, tags, tips }) {
+async function create({ userId, userName, rating, title, body }) {
   const doc = {
     userId: Number(sanitizePrimitive(userId)),
     userName: sanitizePrimitive(userName),
     rating: Number(sanitizePrimitive(rating)),
     title: sanitizePrimitive(title),
     body: sanitizePrimitive(body),
-    tags: Array.isArray(tags) ? tags.map(t => sanitizePrimitive(t)) : [],
-    tips: Array.isArray(tips) ? tips.map(t => sanitizePrimitive(t)) : [],
     createdAt: new Date(),
   };
 

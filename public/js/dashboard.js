@@ -47,16 +47,15 @@ const Dashboard = {
 
   renderTotalWorkouts(workouts) {
     const container = document.getElementById('total-workouts');
-    const completed = workouts.filter(w => w.status === 'completed');
     container.innerHTML = '';
-    container.appendChild(createEl('div', 'total-workouts-count', completed.length));
+    container.appendChild(createEl('div', 'total-workouts-count', workouts.length));
     container.appendChild(createEl('div', 'total-workouts-label', 'completed'));
   },
 
   // === Form Handlers ===
 
   resetWorkoutTypeDefault() {
-    document.getElementById('workout-type-select').value = 'weight_loss';
+    document.getElementById('workout-type-select').value = 'cardio';
   },
 
   setupAddWorkoutButton() {
@@ -82,8 +81,7 @@ const Dashboard = {
         return;
       }
 
-      const formType = document.getElementById('workout-type-select').value;
-      const categoryName = formValueToWorkoutType(formType);
+      const workoutType = document.getElementById('workout-type-select').value;
       const durationMin = parseInt(document.getElementById('workout-duration').value, 10);
       const location = document.getElementById('workout-location').value;
 
@@ -101,8 +99,7 @@ const Dashboard = {
       try {
         await API.post('/api/workouts', {
           date: selectedDate,
-          type: categoryName,
-          status: 'completed',
+          type: workoutType,
           duration_min: durationMin,
           location,
         });

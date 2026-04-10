@@ -57,7 +57,7 @@ describe('Middleware Integration Tests', () => {
     const res = await request('/api/workouts/99999', {
       method: 'PATCH',
       headers: { Authorization: `Bearer ${userToken}` },
-      body: { status: 'completed' },
+      body: { type: 'strength' },
     });
     assert.ok(typeof res.body === 'object');
     assert.ok(res.body.error);

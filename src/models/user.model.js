@@ -27,7 +27,7 @@ async function create({ email, passwordHash, name }) {
 }
 
 async function updatePreferences(id, updates) {
-  const allowedFields = ['name', 'location', 'unit_pref'];
+  const allowedFields = ['location', 'unit_pref'];
 
   const setClauses = [];
   const values = [];

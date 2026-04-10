@@ -55,13 +55,15 @@ describe('Review Routes Integration Tests', () => {
         rating: 5,
         title: 'Solid session',
         body: 'Really enjoyed this one',
-        tags: ['legs', 'strength'],
       },
     });
     assert.strictEqual(res.status, 201);
     assert.strictEqual(res.body.review.rating, 5);
     assert.strictEqual(res.body.review.title, 'Solid session');
     assert.strictEqual(res.body.review.userName, 'Reviewer User');
+    // Extraneous tag/tip fields should not be silently stored
+    assert.strictEqual(res.body.review.tags, undefined);
+    assert.strictEqual(res.body.review.tips, undefined);
   });
 
   it('POST /api/reviews returns 400 for invalid rating', async () => {

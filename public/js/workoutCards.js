@@ -16,7 +16,6 @@ const WorkoutCards = {
       }
 
       const completed = workouts
-        .filter(w => w.status === 'completed')
         .slice(0, 7)
         .reverse();
 

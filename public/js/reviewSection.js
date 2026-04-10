@@ -58,6 +58,14 @@ const ReviewSection = {
     header.appendChild(stars);
     card.appendChild(header);
 
+    // Date
+    if (review.createdAt) {
+      const date = document.createElement('div');
+      date.className = 'review-date';
+      date.textContent = review.createdAt.split('T')[0];
+      card.appendChild(date);
+    }
+
     // Title
     if (review.title) {
       const title = document.createElement('div');

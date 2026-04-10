@@ -32,8 +32,6 @@ function buildSampleReviews(aliceId, bobId) {
       rating: 5,
       title: 'Great beginner workout!',
       body: 'The squat progression felt right for my level. Not too easy, not too hard.',
-      tags: ['beginner-friendly', 'lower-body'],
-      tips: ['Start with bodyweight squats before adding weight', 'Focus on form over reps'],
       createdAt: new Date('2026-04-01'),
     },
     {
@@ -42,8 +40,6 @@ function buildSampleReviews(aliceId, bobId) {
       rating: 4,
       title: 'Solid full-body session',
       body: 'Loved the combination of deadlifts and kettlebell swings. Great for building power.',
-      tags: ['advanced', 'full-body', 'strength'],
-      tips: ['Warm up thoroughly before heavy lifts', 'Keep rest periods short between swings'],
       createdAt: new Date('2026-04-03'),
     },
     {
@@ -52,8 +48,6 @@ function buildSampleReviews(aliceId, bobId) {
       rating: 4,
       title: 'Nice indoor alternative',
       body: 'It was raining so I switched to indoor exercises. The jump rope cardio was intense!',
-      tags: ['indoor', 'cardio', 'rainy-day'],
-      tips: ['Make sure you have enough ceiling clearance for jump rope'],
       createdAt: new Date('2026-04-05'),
     },
   ];
@@ -91,18 +85,18 @@ async function seed() {
 
   // Create some sample workouts for the users
   const workoutData = [
-    { user_id: aliceId, date: '2026-04-01', type: 'cardio', status: 'completed', duration_min: 30, weather_temp: 72, weather_cond: 'clear', location: 'New York' },
-    { user_id: bobId, date: '2026-04-01', type: 'strength', status: 'completed', duration_min: 60, weather_temp: 78, weather_cond: 'partly cloudy', location: 'San Francisco' },
-    { user_id: aliceId, date: '2026-04-02', type: 'endurance', status: 'completed', duration_min: 30, weather_temp: 55, weather_cond: 'rain', location: 'Boston' },
-    { user_id: aliceId, date: '2026-04-03', type: 'strength', status: 'completed', duration_min: 30, weather_temp: 68, weather_cond: 'clear', location: 'New York' },
-    { user_id: bobId, date: '2026-04-03', type: 'endurance', status: 'completed', duration_min: 60, weather_temp: 75, weather_cond: 'clear', location: 'Miami' },
+    { user_id: aliceId, date: '2026-04-01', type: 'cardio', duration_min: 30, location: 'New York' },
+    { user_id: bobId, date: '2026-04-01', type: 'strength', duration_min: 60, location: 'San Francisco' },
+    { user_id: aliceId, date: '2026-04-02', type: 'endurance', duration_min: 30, location: 'Boston' },
+    { user_id: aliceId, date: '2026-04-03', type: 'strength', duration_min: 30, location: 'New York' },
+    { user_id: bobId, date: '2026-04-03', type: 'endurance', duration_min: 60, location: 'Miami' },
   ];
 
   for (const w of workoutData) {
     await pool.query(
-      `INSERT INTO workouts (user_id, date, type, status, duration_min, weather_temp, weather_cond, location)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-      [w.user_id, w.date, w.type, w.status, w.duration_min, w.weather_temp, w.weather_cond, w.location]
+      `INSERT INTO workouts (user_id, date, type, duration_min, location)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [w.user_id, w.date, w.type, w.duration_min, w.location]
     );
   }
   console.log(`Seeded ${workoutData.length} workouts`);

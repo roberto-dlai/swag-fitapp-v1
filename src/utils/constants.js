@@ -10,10 +10,6 @@ module.exports = {
   WORKOUT_TYPES: ['cardio', 'strength', 'endurance'],
   DEFAULT_WORKOUT_TYPE: 'cardio',
 
-  // Workout statuses
-  WORKOUT_STATUSES: ['planned', 'in_progress', 'completed', 'skipped'],
-  DEFAULT_WORKOUT_STATUS: 'planned',
-
   // Unit preferences
   UNIT_PREFS: ['imperial', 'metric'],
   DEFAULT_UNIT_PREF: 'imperial',

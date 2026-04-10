@@ -15,7 +15,7 @@ async function getReviews(req, res, next) {
 
 async function createReview(req, res, next) {
   try {
-    const { rating, title, body, tags, tips } = req.body;
+    const { rating, title, body } = req.body;
 
     const errors = [];
 
@@ -36,8 +36,6 @@ async function createReview(req, res, next) {
       rating,
       title: title || '',
       body: body.trim(),
-      tags: tags || [],
-      tips: tips || [],
     });
 
     res.status(201).json({ review });

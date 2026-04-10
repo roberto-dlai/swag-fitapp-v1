@@ -519,6 +519,12 @@ a:hover {
   font-size: 0.9rem;
 }
 
+.review-date {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.375rem;
+}
+
 .review-title {
   font-weight: 600;
   margin-bottom: 0.25rem;

@@ -18,14 +18,6 @@ async function updatePreferences(req, res, next) {
     const updates = {};
     const errors = [];
 
-    if (req.body.name !== undefined) {
-      if (typeof req.body.name !== 'string' || req.body.name.trim().length === 0) {
-        errors.push('Name must be a non-empty string');
-      } else {
-        updates.name = req.body.name.trim();
-      }
-    }
-
     if (req.body.location !== undefined) {
       if (typeof req.body.location !== 'string') {
         errors.push('Location must be a string');
