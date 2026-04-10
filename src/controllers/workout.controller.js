@@ -24,6 +24,11 @@ async function createWorkout(req, res, next) {
       return res.status(400).json({ error: 'Date is required' });
     }
 
+    const today = new Date().toISOString().split('T')[0];
+    if (date > today) {
+      return res.status(400).json({ error: 'Cannot log a workout for a future date' });
+    }
+
     if (duration_min !== undefined && !isPositiveInteger(duration_min)) {
       return res.status(400).json({ error: 'duration_min must be a positive integer' });
     }

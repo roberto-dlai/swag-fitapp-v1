@@ -63,13 +63,22 @@ const Dashboard = {
     const dateInput = document.getElementById('workout-date');
     const completeBtn = document.getElementById('complete-workout-btn');
 
-    // Default to today
-    dateInput.value = new Date().toISOString().split('T')[0];
+    // Default to today, and cap the picker at today (no future dates).
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.value = today;
+    dateInput.max = today;
 
     completeBtn.addEventListener('click', async () => {
       const selectedDate = dateInput.value;
       if (!selectedDate) {
         Notifications.error('Please select a date');
+        return;
+      }
+
+      // Recompute today on each click so long-lived sessions don't drift past midnight.
+      const currentToday = new Date().toISOString().split('T')[0];
+      if (selectedDate > currentToday) {
+        Notifications.error('Cannot log a workout for a future date');
         return;
       }
 

@@ -57,6 +57,22 @@ describe('Workout Routes Integration Tests', () => {
     await teardownTestDb();
   });
 
+  it('POST /api/workouts rejects a future date with 400', async () => {
+    const res = await request('/api/workouts', {
+      method: 'POST',
+      headers: authHeader(user2Token),
+      body: {
+        date: '2099-01-01',
+        type: 'cardio',
+        status: 'completed',
+        duration_min: 60,
+        location: 'Boston',
+      },
+    });
+    assert.strictEqual(res.status, 400);
+    assert.match(res.body.error, /future/i);
+  });
+
   it('POST /api/workouts creates a new workout (happy path)', async () => {
     const res = await request('/api/workouts', {
       method: 'POST',
