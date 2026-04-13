@@ -84,7 +84,7 @@ Indexes: `idx_workouts_user_id`, `idx_workouts_date`, `idx_workouts_user_date` (
 
 ---
 
-## API Endpoints (11 routes)
+## API Endpoints (12 routes)
 
 | Method | Path | Auth | Description |
 |---|---|:---:|---|
