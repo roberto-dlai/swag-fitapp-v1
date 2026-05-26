@@ -39,9 +39,9 @@ const Dashboard = {
       const wcContainer = document.getElementById('weekly-plan');
       const tcContainer = document.getElementById('total-workouts');
       wcContainer.innerHTML = '';
-      wcContainer.appendChild(createEl('div', 'error-state', 'Failed to load history'));
+      wcContainer.appendChild(createEl('div', 'error-state', 'Failed to load history: ' + err.message));
       tcContainer.innerHTML = '';
-      tcContainer.appendChild(createEl('div', 'error-state', 'Failed to load'));
+      tcContainer.appendChild(createEl('div', 'error-state', 'Failed to load: ' + err.message));
     }
   },
 
