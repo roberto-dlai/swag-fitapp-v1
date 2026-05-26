@@ -52,10 +52,30 @@ const WeatherWidget = {
       container.appendChild(notice);
     }
 
-    // Hydration tip when temperature exceeds 85°F (convert celsius to F for check)
+    // Normalize to Fahrenheit for threshold checks
     const tempF = weather.unit === 'celsius'
       ? (weather.temperature * 9 / 5) + 32
       : weather.temperature;
+
+    // Outdoor-workout suitability recommendation (skip when weather is the fallback)
+    if (!weather.isDefault) {
+      const suitability = document.createElement('div');
+      suitability.className = 'weather-suitability';
+      if (tempF < 40) {
+        suitability.textContent = 'Too cold for an outdoor workout — train indoors today.';
+      } else if (tempF < 55) {
+        suitability.textContent = 'Chilly outside — bundle up if you head out, or stay in for a warmer session.';
+      } else if (tempF <= 80) {
+        suitability.textContent = 'Perfect weather for an outdoor workout!';
+      } else if (tempF <= 90) {
+        suitability.textContent = 'Warm out — aim for early morning or evening if you train outdoors.';
+      } else {
+        suitability.textContent = 'Too hot for an outdoor workout — move it inside today.';
+      }
+      container.appendChild(suitability);
+    }
+
+    // Hydration tip when temperature exceeds 85°F
     if (tempF > 85) {
       const tip = document.createElement('div');
       tip.className = 'weather-tip';

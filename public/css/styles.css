@@ -377,6 +377,16 @@ a:hover {
   font-weight: 500;
 }
 
+.weather-suitability {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: #eef4ff;
+  color: #2a4a8a;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
 /* ===== New Workout Form ===== */
 .workout-controls {
   display: flex;
