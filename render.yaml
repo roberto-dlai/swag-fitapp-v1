@@ -9,24 +9,16 @@ services:
     startCommand: node scripts/migrate.js && node src/server.js
     healthCheckPath: /api/health
     envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: fitcheck-db
-          property: connectionString
       - key: JWT_SECRET
         generateValue: true        # Render generates a long random value (>32 chars)
       - key: NODE_ENV
         value: production
       # --- Set these manually in the dashboard (sync:false leaves them blank) ---
+      - key: DATABASE_URL           # Internal Database URL of your existing Render Postgres
+        sync: false
       - key: MONGODB_URI            # from MongoDB Atlas, e.g. mongodb+srv://...
         sync: false
       - key: WEATHER_API_KEY        # OpenWeatherMap key (or any non-empty placeholder)
         sync: false
       - key: CORS_ORIGIN            # your Render URL, e.g. https://fitcheck.onrender.com
         sync: false
-
-databases:
-  - name: fitcheck-db
-    databaseName: fitcheck
-    user: fitcheck
-    plan: free
