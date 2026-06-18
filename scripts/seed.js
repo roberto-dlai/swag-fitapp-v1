@@ -4,7 +4,13 @@ const bcrypt = require('bcrypt');
 
 require('dotenv').config();
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+// Scope to the same schema migrations use, so seeding hits FitCheck's tables.
+const DB_SCHEMA = (process.env.DB_SCHEMA || 'public').replace(/[^a-zA-Z0-9_]/g, '') || 'public';
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  options: `-c search_path=${DB_SCHEMA}`,
+});
 const mongoClient = new MongoClient(process.env.MONGODB_URI);
 
 const sampleUsers = [

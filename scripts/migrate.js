@@ -4,9 +4,18 @@ const { Pool } = require('pg');
 
 require('dotenv').config();
 
+// Namespace all tables under this schema so FitCheck can share a database.
+// Sanitized to a bare identifier since it's interpolated, not parameterized.
+const DB_SCHEMA = (process.env.DB_SCHEMA || 'public').replace(/[^a-zA-Z0-9_]/g, '') || 'public';
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  options: `-c search_path=${DB_SCHEMA}`,
 });
+
+async function ensureSchema() {
+  await pool.query(`CREATE SCHEMA IF NOT EXISTS ${DB_SCHEMA}`);
+}
 
 async function ensureMigrationsTable() {
   await pool.query(`
@@ -23,6 +32,7 @@ async function appliedMigrations() {
 }
 
 async function migrate() {
+  await ensureSchema();
   await ensureMigrationsTable();
   const applied = await appliedMigrations();
 
